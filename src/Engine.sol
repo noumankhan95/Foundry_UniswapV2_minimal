@@ -9,4 +9,8 @@ contract Engine {
     function removeLiquidity() external {}
 
     function swap() public {}
+
+    function mint(address _user) public {}
+
+    function swap(address _tokenIn, uint256 _amount, address _to) public {}
 }
