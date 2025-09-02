@@ -36,7 +36,7 @@ contract Engine is ERC20 {
         uint _totalSupply = totalSupply();
         if (_totalSupply == 0) {
             liquidity = sqrt(amountA * amountB) - MINIMUM_LIQUIDITY;
-            _mint(address(0), MINIMUM_LIQUIDITY); // lock permanently
+            _mint(address(1), MINIMUM_LIQUIDITY); // lock permanently
         } else {
             liquidity = min(
                 (amountA * _totalSupply) / reserve0,

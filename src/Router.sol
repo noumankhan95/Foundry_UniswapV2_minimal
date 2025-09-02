@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import "./Engine.sol";
 import "./Factory.sol";
 import {IERC20} from "lib/forge-std/src/interfaces/IERC20.sol";
+import {console} from "forge-std/console.sol";
 
 contract Router {
     Factory public factory;
@@ -20,9 +21,12 @@ contract Router {
     ) public {
         address pair = factory.getPair(_tokenA, _tokenB);
         if (pair == address(0)) {
+            console.log("Pair is zero");
             (address token0, address token1) = sortTokens(_tokenA, _tokenB);
             pair = factory.createPair(token0, token1, _reserveA, _reserveB);
         }
+        console.log("pair address", pair);
+        console.log("msg sender is", msg.sender);
         IERC20(_tokenA).transferFrom(msg.sender, pair, _reserveA);
         IERC20(_tokenB).transferFrom(msg.sender, pair, _reserveB);
         Engine(pair).mint(msg.sender);
