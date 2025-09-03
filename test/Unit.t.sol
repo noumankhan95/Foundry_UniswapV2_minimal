@@ -32,10 +32,6 @@ contract UnitTest is Script {
     }
 
     function testIsLiquiditySet() public {
-        console.log(address(usdt));
-        console.log(address(weth));
-        console.log(weth.balanceOf(user));
-        console.log(usdt.balanceOf(user));
         vm.startPrank(user);
         weth.approve(address(router), 10 ether);
         usdt.approve(address(router), 50000e18);
@@ -46,5 +42,39 @@ contract UnitTest is Script {
         // IERC20(pair).balanceOf(usdt);
         vm.stopPrank();
         assert(pair != address(0));
+    }
+
+    function testLiquidityTokensAreMinted() public {
+        vm.startPrank(user);
+        weth.approve(address(router), 10 ether);
+        usdt.approve(address(router), 50000e18);
+
+        router.AddLiquidity(address(weth), address(usdt), 10, 50000e18);
+        address pair = factory.getPair(address(weth), address(usdt));
+        console.log(pair);
+        // IERC20(pair).balanceOf(usdt);
+        vm.stopPrank();
+        assert(IERC20(pair).balanceOf(user) > 0);
+    }
+
+    function testTokensAreBurnt() public {
+        vm.startPrank(user);
+        weth.approve(address(router), 10 ether);
+        usdt.approve(address(router), 50000e18);
+
+        router.AddLiquidity(address(weth), address(usdt), 10, 50000e18);
+
+        address pair = factory.getPair(address(weth), address(usdt));
+        console.log(IERC20(pair).balanceOf(user));
+
+        IERC20(pair).approve(address(router), IERC20(pair).balanceOf(user));
+        router.removeLiquidity(
+            address(weth),
+            address(usdt),
+            IERC20(pair).balanceOf(user)
+        );
+        vm.stopPrank();
+        console.log(IERC20(pair).balanceOf(user));
+        assert(IERC20(pair).balanceOf(user) >= 0);
     }
 }
