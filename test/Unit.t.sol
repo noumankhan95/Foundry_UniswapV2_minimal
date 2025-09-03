@@ -62,7 +62,7 @@ contract UnitTest is Script {
         weth.approve(address(router), 10 ether);
         usdt.approve(address(router), 50000e18);
 
-        router.AddLiquidity(address(weth), address(usdt), 10, 50000e18);
+        router.AddLiquidity(address(weth), address(usdt), 10 ether, 50000e18);
 
         address pair = factory.getPair(address(weth), address(usdt));
         console.log(IERC20(pair).balanceOf(user));
@@ -76,5 +76,41 @@ contract UnitTest is Script {
         vm.stopPrank();
         console.log(IERC20(pair).balanceOf(user));
         assert(IERC20(pair).balanceOf(user) >= 0);
+    }
+
+    function testSwappingIsDoneCorrectly() public {
+        vm.startPrank(user);
+        weth.approve(address(router), 10 ether);
+        usdt.approve(address(router), 50000e18);
+        router.AddLiquidity(address(weth), address(usdt), 10 ether, 50000e18);
+        address pair = factory.getPair(address(weth), address(usdt));
+
+        (uint112 reserveA, uint112 reserveB) = Engine(pair).getReserves();
+        vm.stopPrank();
+        address newUser = makeAddr("newUser");
+        weth.mint(newUser, 20 ether);
+        vm.startPrank(newUser);
+        weth.approve(address(router), 2 ether);
+        router.swapExactTokens(
+            address(weth),
+            address(usdt),
+            2 ether,
+            1000 ether,
+            newUser
+        );
+        (address token0, address token1) = router.sortTokens(
+            address(weth),
+            address(usdt)
+        );
+        uint amountOut;
+        if (token0 == address(weth)) {
+            amountOut = router.getAmountOut(2 ether, reserveA, reserveB);
+        } else {
+            amountOut = router.getAmountOut(2 ether, reserveB, reserveA);
+        }
+
+        console.log(weth.balanceOf(newUser), "WETH balance");
+        vm.stopPrank();
+        vm.assertGe(usdt.balanceOf(newUser), amountOut);
     }
 }

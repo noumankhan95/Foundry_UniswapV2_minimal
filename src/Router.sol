@@ -25,8 +25,7 @@ contract Router {
             (address token0, address token1) = sortTokens(_tokenA, _tokenB);
             pair = factory.createPair(token0, token1, _reserveA, _reserveB);
         }
-        console.log("pair address", pair);
-        console.log("msg sender is", msg.sender);
+
         IERC20(_tokenA).transferFrom(msg.sender, pair, _reserveA);
         IERC20(_tokenB).transferFrom(msg.sender, pair, _reserveB);
         Engine(pair).mint(msg.sender);
@@ -85,7 +84,7 @@ contract Router {
     function sortTokens(
         address tokenA,
         address tokenB
-    ) internal pure returns (address token0, address token1) {
+    ) public pure returns (address token0, address token1) {
         require(tokenA != tokenB, "IDENTICAL_ADDRESSES");
         (token0, token1) = tokenA < tokenB
             ? (tokenA, tokenB)
